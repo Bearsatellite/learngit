@@ -1,0 +1,113 @@
+package com.Book;
+
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.*;
+public class Bsystem extends JFrame{
+	ImageIcon background;
+	JPanel myPanel;
+	JLabel label;
+	JButton button1;
+	JButton button2;
+	JButton button3;
+	public static void main(String[] args) {
+		
+		new Bsystem();
+	}
+	Bsystem()
+	{
+		button1 = new JButton("管理员登入");   //创建一个按钮
+		button2 = new JButton("读者登入");
+		button3 = new JButton("注册阅读账号");
+		background = new ImageIcon(this.getClass().getResource("/com/res/123.png"));	//创建一个背景图片
+		label = new JLabel(background);		//把背景图片添加到标签里
+		label.setBounds(0, 0, background.getIconWidth(), background.getIconHeight());	//把标签设置为和图片等高等宽
+		myPanel = (JPanel)this.getContentPane();		//把我的面板设置为内容面板
+		myPanel.setOpaque(false);					//把我的面板设置为不可视
+		myPanel.setLayout(new FlowLayout());		//把我的面板设置为流动布局
+		this.getLayeredPane().setLayout(null);		//把分层面板的布局置空
+		myPanel.add(button1);						//把按钮添加到我的面板里
+		myPanel.add(button2);
+		myPanel.add(button3);
+		this.getLayeredPane().add(label, new Integer(Integer.MIN_VALUE));		//把标签添加到分层面板的最底层
+		//设置界面属性
+		button1.addActionListener(new MyClick1());
+		button2.addActionListener(new MyClick2());
+		button3.addActionListener(new MyClick3());
+		this.setTitle("图书登入系统");
+		this.setBounds(300, 300, background.getIconWidth(), background.getIconHeight());
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.setVisible(true);
+	}
+	
+	class MyClick1 implements ActionListener{
+		public void actionPerformed(ActionEvent e){
+			//JOptionPane.showMessageDialog(null, "你单击了"+e.getActionCommand());
+			new but1();
+			setVisible(false);
+		}
+	}
+	
+	class MyClick2 implements ActionListener{
+		public void actionPerformed(ActionEvent e){
+			JOptionPane.showMessageDialog(null, "你单击了"+e.getActionCommand());
+			new Bsystem();
+			setVisible(false);
+		}
+	}
+	
+	class MyClick3 implements ActionListener{
+		public void actionPerformed(ActionEvent e){
+			JOptionPane.showMessageDialog(null, "你单击了"+e.getActionCommand());
+			new Bsystem();
+			setVisible(false);
+		}
+	}
+	
+}
+
+
+package com.Book;
+
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.*;
+public class but1 extends JFrame{
+	ImageIcon background;
+	JPanel myPanel;
+	JLabel label;
+	JTextField jtx = new JTextField("请输入用户名",14);
+	TextField pw = new TextField(null,25);
+	JButton button = new JButton("登入");
+	public static void main(String[] args) {
+		new but1();
+	}
+	but1()
+	{
+		background = new ImageIcon(this.getClass().getResource("/com/res/123.png"));	//创建一个背景图片
+		label = new JLabel(background);		//把背景图片添加到标签里
+		label.setBounds(0, 0, background.getIconWidth(), background.getIconHeight());	//把标签设置为和图片等高等宽
+		myPanel = (JPanel)this.getContentPane();		//把我的面板设置为内容面板
+		myPanel.setOpaque(false);					//把我的面板设置为不可视
+		myPanel.setLayout(new FlowLayout());		//把我的面板设置为流动布局
+		this.getLayeredPane().setLayout(null);		//把分层面板的布局置空
+		pw.setEchoChar('*');
+		myPanel.add(jtx);						//把按钮添加到我的面板里
+		myPanel.add(pw);
+		myPanel.add(button);
+		this.getLayeredPane().add(label, new Integer(Integer.MIN_VALUE));		//把标签添加到分层面板的最底层
+		//设置界面属性
+		
+		this.setTitle("图书登入系统");
+		this.setBounds(300, 300, background.getIconWidth(), background.getIconHeight());
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.setVisible(true);
+	}
+}
+
+
+
+
