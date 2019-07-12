@@ -1,0 +1,864 @@
+package com.Book;
+
+import java.awt.*;									//	系统初始界面
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.*;
+public class Bsystem extends JFrame{
+	ImageIcon background;
+	JPanel myPanel;
+	JLabel label;
+	JButton button1;
+	JButton button2;
+	JButton button3;
+	JButton button4;
+	
+	public static void main(String[] args) {
+		
+		new Bsystem();
+	}
+	
+	Bsystem()
+	{
+		button2 = new JButton("管理员登入");   //创建一个按钮
+		button1 = new JButton("读者登入");
+		button3 = new JButton("注册阅读账号");
+		button4 = new JButton("注册管理账号");
+		background = new ImageIcon(this.getClass().getResource("/com/res/123.png"));	//创建一个背景图片
+		label = new JLabel(background);		//把背景图片添加到标签里
+		label.setBounds(0, 0, background.getIconWidth(), background.getIconHeight());	//把标签设置为和图片等高等宽
+		myPanel = (JPanel)this.getContentPane();		//把我的面板设置为内容面板
+		myPanel.setOpaque(false);					//把我的面板设置为不可视
+		myPanel.setLayout(new FlowLayout());		//把我的面板设置为流动布局
+		this.getLayeredPane().setLayout(null);		//把分层面板的布局置空
+		myPanel.add(button1);						//把按钮添加到我的面板里
+		myPanel.add(button2);
+		myPanel.add(button3);
+		myPanel.add(button4);
+		this.getLayeredPane().add(label, new Integer(Integer.MIN_VALUE));		//把标签添加到分层面板的最底层
+		//设置界面属性
+		button1.addActionListener(new MyClick1());
+		button2.addActionListener(new MyClick2());
+		button3.addActionListener(new MyClick3());
+		button4.addActionListener(new MyClick4());
+		this.setTitle("图书登入系统");
+		this.setBounds(300, 300, background.getIconWidth(), background.getIconHeight());
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.setVisible(true);
+	}
+	
+	class MyClick1 implements ActionListener{
+		public void actionPerformed(ActionEvent e){
+			new but1();
+			setVisible(false);
+		}
+	}
+	
+	class MyClick2 implements ActionListener{
+		public void actionPerformed(ActionEvent e){
+			new but2();
+			setVisible(false);
+		}
+	}
+	
+	class MyClick3 implements ActionListener{
+		public void actionPerformed(ActionEvent e){
+			new registered();
+			setVisible(false);
+		}
+	}
+	
+	class MyClick4 implements ActionListener{
+		public void actionPerformed(ActionEvent e){
+			new registered2();
+			setVisible(false);
+		}
+	}
+	
+}
+
+package com.Book;
+
+import java.awt.*;
+import java.awt.event.ActionEvent;					//读者登入界面
+import java.awt.event.ActionListener;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import javax.swing.*;
+
+import com.Book.Bsystem.MyClick2;
+public class but2 extends JFrame{
+	ImageIcon background;
+	JPanel myPanel;
+	JLabel label;
+	JTextField jtx = new JTextField("请输入用户名",14);
+	TextField pw = new TextField(null,25);
+	JButton button = new JButton("登入");
+	JButton button2 = new JButton("返回");
+	String[] str = new String[2];
+	
+	public static void main(String[] args) {
+		new but2();
+	}
+	
+	
+	but2()
+	{
+		background = new ImageIcon(this.getClass().getResource("/com/res/123.png"));	//创建一个背景图片
+		label = new JLabel(background);		//把背景图片添加到标签里
+		label.setBounds(0, 0, background.getIconWidth(), background.getIconHeight());	//把标签设置为和图片等高等宽
+		myPanel = (JPanel)this.getContentPane();		//把我的面板设置为内容面板
+		myPanel.setOpaque(false);					//把我的面板设置为不可视
+		myPanel.setLayout(new FlowLayout());		//把我的面板设置为流动布局
+		this.getLayeredPane().setLayout(null);		//把分层面板的布局置空
+		pw.setEchoChar('*');
+		myPanel.add(jtx);						//把按钮添加到我的面板里
+		myPanel.add(pw);
+		myPanel.add(button);
+		myPanel.add(button2);
+		this.getLayeredPane().add(label, new Integer(Integer.MIN_VALUE));		//把标签添加到分层面板的最底层
+		//设置界面属性
+		
+		button2.addActionListener(new Breturn2());
+		button.addActionListener(new Breturn());
+		this.setTitle("管理员登入");
+		this.setBounds(300, 300, background.getIconWidth(), background.getIconHeight());
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.setVisible(true);
+	}
+	
+	class Breturn2 implements ActionListener{
+		public void actionPerformed(ActionEvent e){
+			//JOptionPane.showMessageDialog(null, "你单击了"+e.getActionCommand());
+			new Bsystem();
+			setVisible(false);
+		}
+	}
+	
+	class Breturn implements ActionListener{
+		public void actionPerformed(ActionEvent e){
+			int i;
+			str[0] = jtx.getText().toString();
+			str[1] = pw.getText().toString();
+			if(str[0].equals("") || str[1].equals("")) {
+				JOptionPane.showMessageDialog(null, "用户名或密码为空请重新输入！");
+				new but2();
+			}else {
+				try {
+					i = t(str);
+					if(i == 1) {
+						JOptionPane.showMessageDialog(null, "登入成功！");
+						new login2();
+					}else{
+						JOptionPane.showMessageDialog(null, "用户名或密码错误请重新输入！");
+						new but2();
+					}
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+				}
+			}
+			setVisible(false);
+		}
+	}
+	
+	public int t(String[] str) throws SQLException {
+		return select(str);
+	}
+	
+	public static int select(String[] str) throws SQLException{		//查
+		//System.out.println("saa");
+		String sql_Dri = "com.mysql.jdbc.Driver";					//sql驱动语句
+		String sql_host = "jdbc:mysql://localhost:3306/book";		//mysql://主机名:端口/数据库名
+		String sql_usname = "root"; 								//用户名
+		String sql_psword = "123456789";							//密码
+		String sql_statm = "select * from managementer";					//要执行的sql语句（查询语句）
+		Connection con = null;										//创建一个与数据库连接的对象
+		PreparedStatement pre = null;								//预编译，执行sql语句
+		ResultSet res = null;										//储存查询结果
+		int i = 0;
+		//获取驱动
+		try {
+			Class.forName(sql_Dri);
+		} catch (ClassNotFoundException e) {
+			System.out.println("获取驱动失败");
+			e.printStackTrace();
+		}
+		//连接数据库
+		try {
+			con = DriverManager.getConnection(sql_host,sql_usname,sql_psword);
+		} catch (SQLException e) {
+			System.out.println("连接数据库失败");
+			e.printStackTrace();
+		}
+		pre = con.prepareStatement(sql_statm);
+		res = pre.executeQuery(sql_statm);
+		try {
+			while(res.next()){
+				String name = res.getString(1);
+				String pwd = res.getString(2);
+				if(name.equals(str[0])&&pwd.equals(str[1])) i = 1;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		//关闭三个接口
+		if(con != null){
+			try {
+				con.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		if(pre != null){
+			try {
+				pre.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		if(res != null){
+			try {
+				res.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return i;
+	}
+	
+}
+
+package com.Book;
+
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;								//阅读账号注册界面
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import javax.swing.*;
+
+import com.Book.Bsystem.MyClick2;
+public class registered extends JFrame{							//阅读账号注册界面
+	
+	ImageIcon background;
+	JPanel myPanel;
+	JLabel label;
+	JTextField jtx = new JTextField("请输入用户名(非中文)",14);
+	TextField pw = new TextField(null,25);
+	JButton button = new JButton("注册");
+	JButton button2 = new JButton("返回");
+	String[] str = new String[2];
+	public static void main(String[] args) {
+		new registered();
+	}
+	
+	
+	registered() 
+	{
+		background = new ImageIcon(this.getClass().getResource("/com/res/123.png"));	//创建一个背景图片
+		label = new JLabel(background);		//把背景图片添加到标签里
+		label.setBounds(0, 0, background.getIconWidth(), background.getIconHeight());	//把标签设置为和图片等高等宽
+		myPanel = (JPanel)this.getContentPane();		//把我的面板设置为内容面板
+		myPanel.setOpaque(false);					//把我的面板设置为不可视
+		myPanel.setLayout(new FlowLayout());		//把我的面板设置为流动布局
+		this.getLayeredPane().setLayout(null);		//把分层面板的布局置空
+		pw.setEchoChar('*');
+		myPanel.add(jtx);						//把按钮添加到我的面板里
+		myPanel.add(pw);
+		myPanel.add(button);
+		myPanel.add(button2);
+		this.getLayeredPane().add(label, new Integer(Integer.MIN_VALUE));		//把标签添加到分层面板的最底层
+		//设置界面属性
+		
+		button2.addActionListener(new Breturn2());
+		button.addActionListener(new Breturn());
+		this.setTitle("读者注册");
+		this.setBounds(300, 300, background.getIconWidth(), background.getIconHeight());
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.setVisible(true);
+	}
+	
+	class Breturn2 implements ActionListener{
+		public void actionPerformed(ActionEvent e){
+			new Bsystem();
+			setVisible(false);
+		}
+	}
+	
+	class Breturn implements ActionListener {
+		public void actionPerformed(ActionEvent e){
+			int i;
+			str[0] = jtx.getText().toString();
+			str[1] = pw.getText().toString();
+			if(str[0].equals("") || str[1].equals("")) {
+				JOptionPane.showMessageDialog(null, "用户名或密码为空请重新输入！");
+				new registered();
+			}else {
+				try {
+					i = t(str);
+					if(i != 1) {
+						JOptionPane.showMessageDialog(null, "注册成功！");
+						new Bsystem();
+					}
+					if(i == 1){
+						JOptionPane.showMessageDialog(null, "用户名重复请重新输入！");
+						new registered();
+					}
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+				}
+			}
+			setVisible(false);
+		}
+	}
+	
+	public int t(String[] str) throws SQLException {
+		return insert(str);
+	}
+	
+	public static int insert(String[] str) throws SQLException{		//增
+		String sql_Dri = "com.mysql.jdbc.Driver";
+		String sql_host = "jdbc:mysql://localhost:3306/book";
+		String sql_usname = "root";
+		String sql_uspsword = "123456789";
+		String sql_statm = "insert into reader values(?,?)";
+		Connection con = null;
+		int z = 1;
+		PreparedStatement pre = null;
+		try {
+			Class.forName(sql_Dri);
+		} catch (ClassNotFoundException e) {
+			System.out.println("获取驱动失败");
+			e.printStackTrace();
+		}
+		try {
+			con = DriverManager.getConnection(sql_host,sql_usname,sql_uspsword);
+		} catch (SQLException e) {
+			System.out.println("连接数据库失败");
+			e.printStackTrace();
+		}
+		z = select(str);
+		if(z != 1) {
+			pre = con.prepareStatement(sql_statm);
+			pre.setString(1, str[0]);
+			pre.setString(2, str[1]);
+			int c = pre.executeUpdate();
+		}
+		try {
+			if(con != null){
+				con.close();
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		try {
+			if(pre != null){
+				pre.close();
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return z;
+	}
+	
+	public static int select(String[] str) throws SQLException{		//查
+		//System.out.println("saa");
+		String sql_Dri = "com.mysql.jdbc.Driver";					//sql驱动语句
+		String sql_host = "jdbc:mysql://localhost:3306/book";		//mysql://主机名:端口/数据库名
+		String sql_usname = "root"; 								//用户名
+		String sql_psword = "123456789";							//密码
+		String sql_statm = "select * from reader";					//要执行的sql语句（查询语句）
+		Connection con = null;										//创建一个与数据库连接的对象
+		PreparedStatement pre = null;								//预编译，执行sql语句
+		ResultSet res = null;										//储存查询结果
+		int i = 0;
+		//获取驱动
+		try {
+			Class.forName(sql_Dri);
+		} catch (ClassNotFoundException e) {
+			System.out.println("获取驱动失败");
+			e.printStackTrace();
+		}
+		//连接数据库
+		try {
+			con = DriverManager.getConnection(sql_host,sql_usname,sql_psword);
+		} catch (SQLException e) {
+			System.out.println("连接数据库失败");
+			e.printStackTrace();
+		}
+		pre = con.prepareStatement(sql_statm);
+		res = pre.executeQuery(sql_statm);
+		try {
+			while(res.next()){
+				String name = res.getString(1);
+				if(name.equals(str[0])) i = 1;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		//关闭三个接口
+		if(con != null){
+			try {
+				con.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		if(pre != null){
+			try {
+				pre.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		if(res != null){
+			try {
+				res.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return i;
+	}
+	package com.Book;
+
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;								//管理账号注册界面
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import javax.swing.*;
+
+import com.Book.Bsystem.MyClick2;
+public class registered2 extends JFrame{				//管理员注册界面
+	ImageIcon background;
+	JPanel myPanel;
+	JLabel label;
+	JTextField jtx = new JTextField("请输入用户名(非中文)",14);
+	TextField pw = new TextField(null,25);
+	JButton button = new JButton("注册");
+	JButton button2 = new JButton("返回");
+	String[] str = new String[2];
+	
+	public static void main(String[] args) {
+		new registered2();
+	}
+	
+	
+	registered2()
+	{
+		background = new ImageIcon(this.getClass().getResource("/com/res/123.png"));	//创建一个背景图片
+		label = new JLabel(background);		//把背景图片添加到标签里
+		label.setBounds(0, 0, background.getIconWidth(), background.getIconHeight());	//把标签设置为和图片等高等宽
+		myPanel = (JPanel)this.getContentPane();		//把我的面板设置为内容面板
+		myPanel.setOpaque(false);					//把我的面板设置为不可视
+		myPanel.setLayout(new FlowLayout());		//把我的面板设置为流动布局
+		this.getLayeredPane().setLayout(null);		//把分层面板的布局置空
+		pw.setEchoChar('*');
+		myPanel.add(jtx);						//把按钮添加到我的面板里
+		myPanel.add(pw);
+		myPanel.add(button);
+		myPanel.add(button2);
+		this.getLayeredPane().add(label, new Integer(Integer.MIN_VALUE));		//把标签添加到分层面板的最底层
+		//设置界面属性
+		
+		button2.addActionListener(new Breturn2());
+		button.addActionListener(new Breturn());
+		this.setTitle("管理员注册");
+		this.setBounds(300, 300, background.getIconWidth(), background.getIconHeight());
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.setVisible(true);
+	}
+	
+	class Breturn2 implements ActionListener{
+		public void actionPerformed(ActionEvent e){
+			new Bsystem();
+			setVisible(false);
+		}
+	}
+	
+	class Breturn implements ActionListener{
+		public void actionPerformed(ActionEvent e){
+			int i;
+			str[0] = jtx.getText().toString();
+			str[1] = pw.getText().toString();
+			if(str[0].equals("") || str[1].equals("")) {
+				JOptionPane.showMessageDialog(null, "用户名或密码为空请重新输入！");
+				new registered();
+			}else {
+				try {
+					i = t(str);
+					if(i != 1) {
+						JOptionPane.showMessageDialog(null, "注册成功！");
+						new Bsystem();
+					}
+					if(i == 1){
+						JOptionPane.showMessageDialog(null, "用户名重复请重新输入！");
+						new registered();
+					}
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+				}
+			}
+			setVisible(false);
+		}
+	}
+	
+	public int t(String[] str) throws SQLException {
+		return insert(str);
+	}
+	
+	public static int insert(String[] str) throws SQLException{		//增
+		String sql_Dri = "com.mysql.jdbc.Driver";
+		String sql_host = "jdbc:mysql://localhost:3306/book";
+		String sql_usname = "root";
+		String sql_uspsword = "123456789";
+		String sql_statm = "insert into managementer values(?,?)";
+		Connection con = null;
+		int z = 1;
+		PreparedStatement pre = null;
+		try {
+			Class.forName(sql_Dri);
+		} catch (ClassNotFoundException e) {
+			System.out.println("获取驱动失败");
+			e.printStackTrace();
+		}
+		try {
+			con = DriverManager.getConnection(sql_host,sql_usname,sql_uspsword);
+		} catch (SQLException e) {
+			System.out.println("连接数据库失败");
+			e.printStackTrace();
+		}
+		z = select(str);
+		if(z != 1) {
+			pre = con.prepareStatement(sql_statm);
+			pre.setString(1, str[0]);
+			pre.setString(2, str[1]);
+			int c = pre.executeUpdate();
+		}
+		try {
+			if(con != null){
+				con.close();
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		try {
+			if(pre != null){
+				pre.close();
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return z;
+	}
+	
+	public static int select(String[] str) throws SQLException{		//查
+		//System.out.println("saa");
+		String sql_Dri = "com.mysql.jdbc.Driver";					//sql驱动语句
+		String sql_host = "jdbc:mysql://localhost:3306/book";		//mysql://主机名:端口/数据库名
+		String sql_usname = "root"; 								//用户名
+		String sql_psword = "123456789";							//密码
+		String sql_statm = "select * from managementer";					//要执行的sql语句（查询语句）
+		Connection con = null;										//创建一个与数据库连接的对象
+		PreparedStatement pre = null;								//预编译，执行sql语句
+		ResultSet res = null;										//储存查询结果
+		int i = 0;
+		//获取驱动
+		try {
+			Class.forName(sql_Dri);
+		} catch (ClassNotFoundException e) {
+			System.out.println("获取驱动失败");
+			e.printStackTrace();
+		}
+		//连接数据库
+		try {
+			con = DriverManager.getConnection(sql_host,sql_usname,sql_psword);
+		} catch (SQLException e) {
+			System.out.println("连接数据库失败");
+			e.printStackTrace();
+		}
+		pre = con.prepareStatement(sql_statm);
+		res = pre.executeQuery(sql_statm);
+		try {
+			while(res.next()){
+				String name = res.getString(1);
+				if(name.equals(str[0])) i = 1;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		//关闭三个接口
+		if(con != null){
+			try {
+				con.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		if(pre != null){
+			try {
+				pre.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		if(res != null){
+			try {
+				res.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return i;
+	}
+	
+}
+package com.Book;
+
+import java.awt.*;									//	读者登入成功后界面
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.*;
+public class login extends JFrame{
+	ImageIcon background;
+	JPanel myPanel;
+	JLabel label;
+	JButton button1;
+	
+	public static void main(String[] args) {
+		
+		new login();
+	}
+	
+	login()
+	{
+		button1 = new JButton("读者登入成功");   //创建一个按钮
+		background = new ImageIcon(this.getClass().getResource("/com/res/123.png"));	//创建一个背景图片
+		label = new JLabel(background);		//把背景图片添加到标签里
+		label.setBounds(0, 0, background.getIconWidth(), background.getIconHeight());	//把标签设置为和图片等高等宽
+		myPanel = (JPanel)this.getContentPane();		//把我的面板设置为内容面板
+		myPanel.setOpaque(false);					//把我的面板设置为不可视
+		myPanel.setLayout(new FlowLayout());		//把我的面板设置为流动布局
+		this.getLayeredPane().setLayout(null);		//把分层面板的布局置空
+		myPanel.add(button1);						//把按钮添加到我的面板里
+		this.getLayeredPane().add(label, new Integer(Integer.MIN_VALUE));		//把标签添加到分层面板的最底层
+		//设置界面属性
+		
+		this.setTitle("图书");
+		this.setBounds(300, 300, background.getIconWidth(), background.getIconHeight());
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.setVisible(true);
+	}
+	
+	
+package com.Book;
+
+import java.awt.*;									//	管理员登入成功界面
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;				
+
+import javax.swing.*;
+public class login2 extends JFrame{
+	ImageIcon background;
+	JPanel myPanel;
+	JLabel label;
+	JButton button1;
+	
+	public static void main(String[] args) {
+		
+		new login2();
+	}
+	
+	login2()
+	{
+		button1 = new JButton("管理员登入成功");   //创建一个按钮
+		background = new ImageIcon(this.getClass().getResource("/com/res/123.png"));	//创建一个背景图片
+		label = new JLabel(background);		//把背景图片添加到标签里
+		label.setBounds(0, 0, background.getIconWidth(), background.getIconHeight());	//把标签设置为和图片等高等宽
+		myPanel = (JPanel)this.getContentPane();		//把我的面板设置为内容面板
+		myPanel.setOpaque(false);					//把我的面板设置为不可视
+		myPanel.setLayout(new FlowLayout());		//把我的面板设置为流动布局
+		this.getLayeredPane().setLayout(null);		//把分层面板的布局置空
+		myPanel.add(button1);						//把按钮添加到我的面板里
+		this.getLayeredPane().add(label, new Integer(Integer.MIN_VALUE));		//把标签添加到分层面板的最底层
+		//设置界面属性
+		
+		this.setTitle("图书");
+		this.setBounds(300, 300, background.getIconWidth(), background.getIconHeight());
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.setVisible(true);
+	}
+	
+	
+}
+package com.Book;
+
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import javax.swing.*;
+
+import com.Book.Bsystem.MyClick2;
+public class but1 extends JFrame{								//	管理员登陆界面
+	ImageIcon background;
+	JPanel myPanel;
+	JLabel label;
+	JTextField jtx = new JTextField("请输入用户名",14);
+	TextField pw = new TextField(null,25);
+	JButton button = new JButton("登入");
+	JButton button2 = new JButton("返回");
+	String[] str = new String[2];
+	
+	public static void main(String[] args) {
+		new but1();
+	}
+	
+	
+	but1()
+	{
+		background = new ImageIcon(this.getClass().getResource("/com/res/123.png"));	//创建一个背景图片
+		label = new JLabel(background);		//把背景图片添加到标签里
+		label.setBounds(0, 0, background.getIconWidth(), background.getIconHeight());	//把标签设置为和图片等高等宽
+		myPanel = (JPanel)this.getContentPane();		//把我的面板设置为内容面板
+		myPanel.setOpaque(false);					//把我的面板设置为不可视
+		myPanel.setLayout(new FlowLayout());		//把我的面板设置为流动布局
+		this.getLayeredPane().setLayout(null);		//把分层面板的布局置空
+		pw.setEchoChar('*');
+		myPanel.add(jtx);						//把按钮添加到我的面板里
+		myPanel.add(pw);
+		myPanel.add(button);
+		myPanel.add(button2);
+		this.getLayeredPane().add(label, new Integer(Integer.MIN_VALUE));		//把标签添加到分层面板的最底层
+		//设置界面属性
+		
+		button2.addActionListener(new Breturn2());
+		button.addActionListener(new Breturn());
+		this.setTitle("读者登入");
+		this.setBounds(300, 300, background.getIconWidth(), background.getIconHeight());
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.setVisible(true);
+	}
+	
+	class Breturn2 implements ActionListener{
+		public void actionPerformed(ActionEvent e){
+			new Bsystem();
+			setVisible(false);
+		}
+	}
+	
+	class Breturn implements ActionListener{
+		public void actionPerformed(ActionEvent e){
+			int i;
+			str[0] = jtx.getText().toString();
+			str[1] = pw.getText().toString();
+			if(str[0].equals("") || str[1].equals("")) {
+				JOptionPane.showMessageDialog(null, "用户名或密码为空请重新输入！");
+				new but1();
+			}else {
+				try {
+					i = t(str);
+					if(i == 1) {
+						JOptionPane.showMessageDialog(null, "登入成功！");
+						new login();
+					}else{
+						JOptionPane.showMessageDialog(null, "用户名或密码错误请重新输入！");
+						new but1();
+					}
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+				}
+			}
+			setVisible(false);
+		}
+	}
+	
+	public int t(String[] str) throws SQLException {
+		return select(str);
+	}
+	
+	public static int select(String[] str) throws SQLException{		//查
+		//System.out.println("saa");
+		String sql_Dri = "com.mysql.jdbc.Driver";					//sql驱动语句
+		String sql_host = "jdbc:mysql://localhost:3306/book";		//mysql://主机名:端口/数据库名
+		String sql_usname = "root"; 								//用户名
+		String sql_psword = "123456789";							//密码
+		String sql_statm = "select * from reader";					//要执行的sql语句（查询语句）
+		Connection con = null;										//创建一个与数据库连接的对象
+		PreparedStatement pre = null;								//预编译，执行sql语句
+		ResultSet res = null;										//储存查询结果
+		int i = 0;
+		//获取驱动
+		try {
+			Class.forName(sql_Dri);
+		} catch (ClassNotFoundException e) {
+			System.out.println("获取驱动失败");
+			e.printStackTrace();
+		}
+		//连接数据库
+		try {
+			con = DriverManager.getConnection(sql_host,sql_usname,sql_psword);
+		} catch (SQLException e) {
+			System.out.println("连接数据库失败");
+			e.printStackTrace();
+		}
+		pre = con.prepareStatement(sql_statm);
+		res = pre.executeQuery(sql_statm);
+		try {
+			while(res.next()){
+				String name = res.getString(1);
+				String pwd = res.getString(2);
+				if(name.equals(str[0])&&pwd.equals(str[1])) i = 1;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		//关闭三个接口
+		if(con != null){
+			try {
+				con.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		if(pre != null){
+			try {
+				pre.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		if(res != null){
+			try {
+				res.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return i;
+	}
+	
+}
+}
+}
+
