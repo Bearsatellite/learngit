@@ -1,0 +1,150 @@
+package com.Book;
+
+import java.awt.*;									//	管理员登入成功界面
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import javax.swing.*;
+
+import com.Book.Bsystem.MyClick4;
+public class login2 extends JFrame{
+	ImageIcon background;
+	JPanel myPanel;
+	JLabel label;
+	JButton button1;
+	JButton button2;
+	JButton button3;
+	JButton button4;
+	String name;									//存用户名
+	static String[] book = new String[1000]; 			//存书名
+	static int[]  book1 = new int[1000];				//对应的书是否可借
+	int z = 0,y = 150,x = 100;
+	
+	public static void main(String[] args) {
+		new login2("aaa");
+	}
+	
+	login2(String str0)
+	{
+		name = str0;
+		button1 = new JButton("增加图书");   //创建一个按钮
+		button1.setBounds(300, 20, 200, 40);
+		button2 = new JButton("删除图书");   //创建一个按钮
+		button2.setBounds(600, 20, 200, 40);
+		button3 = new JButton("修改图书借阅状态");   //创建一个按钮
+		button3.setBounds(900, 20, 200, 40);
+		button4 = new JButton("退出登入");   //创建一个按钮
+		button4.setBounds(50, 20, 100, 30);
+		this.add(button1);
+		this.add(button2);
+		this.add(button3);
+		this.add(button4);
+		getContentPane().setLayout(null);
+		try {
+			t();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		button4.addActionListener(new MyClick4());
+		this.setTitle("图书");
+		this.setBounds(200, 100, 1511,815);
+		this.setResizable(false);
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.setVisible(true);
+	}
+	
+	class MyClick4 implements ActionListener{
+		public void actionPerformed(ActionEvent e){
+			new Bsystem();
+			setVisible(false);
+		}
+	}
+	
+	public void paint(Graphics g) {
+		while(book[z] != null) {
+			if(y > 700) {
+				x+=100;
+				y = 150;
+			}
+			g.drawString(book[z], x, y);
+			if(book1[z] == 1) {
+				g.setColor(Color.blue);
+				g.drawString("可借阅", x, y+20);
+				g.setColor(Color.BLACK);
+			}else {
+				g.setColor(Color.red);
+				g.drawString("不可借阅", x, y+20);
+				g.setColor(Color.BLACK);
+			}
+			y+=50;
+			z++;
+		}
+	}
+	
+	public void t() throws SQLException {
+		select();
+	}
+	
+	public static void select() throws SQLException{		//查
+		int i = 0;
+		String sql_Dri = "com.mysql.jdbc.Driver";					//sql驱动语句
+		String sql_host = "jdbc:mysql://localhost:3306/book";		//mysql://主机名:端口/数据库名
+		String sql_usname = "root"; 								//用户名
+		String sql_psword = "123456789";							//密码
+		String sql_statm = "select * from guanliyuan";					//要执行的sql语句（查询语句）
+		Connection con = null;										//创建一个与数据库连接的对象
+		PreparedStatement pre = null;								//预编译，执行sql语句
+		ResultSet res = null;										//储存查询结果
+		//获取驱动
+		try {
+			Class.forName(sql_Dri);
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+		//连接数据库
+		try {
+			con = DriverManager.getConnection(sql_host,sql_usname,sql_psword);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		pre = con.prepareStatement(sql_statm);
+		res = pre.executeQuery(sql_statm);
+		try {
+			while(res.next()){
+				book[i] = res.getString(1);
+				book1[i] = res.getInt(2);
+				i++;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		//关闭三个接口
+		if(con != null){
+			try {
+				con.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		if(pre != null){
+			try {
+				pre.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		if(res != null){
+			try {
+				res.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+}
