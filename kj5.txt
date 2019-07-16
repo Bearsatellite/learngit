@@ -1,0 +1,459 @@
+package com.Book;
+
+import java.awt.*;									//	管理员登入成功界面
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import javax.swing.*;
+
+import com.Book.Bsystem.MyClick2;
+import com.Book.Bsystem.MyClick4;
+public class login2 extends JFrame{
+	ImageIcon background;
+	JPanel myPanel;
+	JLabel label;
+	JButton button1;
+	JButton button2;
+	JButton button4;
+	String name;										//存用户名
+	static String[] book = new String[1000]; 			//存书名
+	static int[]  book1 = new int[1000];				//对应的书是否可借
+	static String[] pname = new String[1000];			
+	int i,z = 0,y = 150,x = 100;
+	
+	public static void main(String[] args) {
+		new login2("aaa");
+	}
+	
+	login2(String str0)
+	{
+		z = 0;
+		name = str0;
+		button1 = new JButton("增加图书");   //创建一个按钮
+		button1.setBounds(300, 20, 400, 40);
+		button2 = new JButton("删除图书");   //创建一个按钮
+		button2.setBounds(800, 20, 400, 40);
+		button4 = new JButton("退出登入");   //创建一个按钮
+		button4.setBounds(50, 20, 100, 30);
+		this.add(button1);
+		this.add(button2);
+		this.add(button4);
+		getContentPane().setLayout(null);
+		try {
+			i = t();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		button1.addActionListener(new MyClick1());
+		button2.addActionListener(new MyClick2());
+		button4.addActionListener(new MyClick4());
+		this.setTitle("图书");
+		this.setBounds(200, 100, 1511,815);
+		this.setResizable(false);
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.setVisible(true);
+	}
+	
+	class MyClick1 implements ActionListener{
+		public void actionPerformed(ActionEvent e){
+			new insertbook(name);
+			setVisible(false);
+		}
+	}
+	
+	class MyClick2 implements ActionListener{
+		public void actionPerformed(ActionEvent e){
+			new deletebook(name);
+			setVisible(false);
+		}
+	}
+	
+	class MyClick4 implements ActionListener{
+		public void actionPerformed(ActionEvent e){
+			new Bsystem();
+			setVisible(false);
+		}
+	}
+	
+	public void paint(Graphics g) {
+		while(z != i) {
+			if(y > 700) {
+				x+=200;
+				y = 150;
+			}
+			g.drawString(book[z], x, y);
+			if(book1[z] == 1) {
+				g.setColor(Color.blue);
+				g.drawString("可借阅", x, y+20);
+				g.setColor(Color.BLACK);
+			}else {
+				g.setColor(Color.red);
+				g.drawString("已被用户:", x, y+20);
+				g.drawString(pname[z], x+60, y+20);
+				g.drawString("借阅", x, y+40);
+				g.setColor(Color.BLACK);
+			}
+			y+=60;
+			z++;
+		}
+	}
+	
+	public int t() throws SQLException {
+		return select();
+	}
+	
+	public static int select() throws SQLException{		//查
+		int i = 0;
+		String sql_Dri = "com.mysql.jdbc.Driver";					//sql驱动语句
+		String sql_host = "jdbc:mysql://localhost:3306/book";		//mysql://主机名:端口/数据库名
+		String sql_usname = "root"; 								//用户名
+		String sql_psword = "123456789";							//密码
+		String sql_statm = "select * from guanliyuan";					//要执行的sql语句（查询语句）
+		Connection con = null;										//创建一个与数据库连接的对象
+		PreparedStatement pre = null;								//预编译，执行sql语句
+		ResultSet res = null;										//储存查询结果
+		//获取驱动
+		try {
+			Class.forName(sql_Dri);
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+		//连接数据库
+		try {
+			con = DriverManager.getConnection(sql_host,sql_usname,sql_psword);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		pre = con.prepareStatement(sql_statm);
+		res = pre.executeQuery(sql_statm);
+		try {
+			while(res.next()){
+				book[i] = res.getString(1);
+				book1[i] = res.getInt(2);
+				pname[i] = res.getString(3);
+				i++;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		//关闭三个接口
+		if(con != null){
+			try {
+				con.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		if(pre != null){
+			try {
+				pre.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		if(res != null){
+			try {
+				res.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return i;
+	}
+	
+}
+
+
+package com.Book;
+
+import java.awt.*;									//	管理员删除图书界面界面
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
+import javax.swing.*;
+
+import com.Book.login2.MyClick2;
+public class deletebook extends JFrame{
+	ImageIcon background;
+	JPanel myPanel;
+	JLabel label;
+	JButton button1;
+	JButton button2;
+	JTextField jtx;
+	Label lab;
+	String name;
+	
+	public static void main(String[] args) {
+		
+		new deletebook("asd");
+	}
+	
+	deletebook(String str0)
+	{
+		name = str0;
+		button2 = new JButton("返回");   //创建一个按钮
+		button1 = new JButton("确认");
+		jtx = new JTextField(null,14);
+		lab = new Label("请输入要删除的书名");
+		background = new ImageIcon(this.getClass().getResource("/com/res/123.png"));	//创建一个背景图片
+		label = new JLabel(background);		//把背景图片添加到标签里
+		label.setBounds(0, 0, background.getIconWidth(), background.getIconHeight());	//把标签设置为和图片等高等宽
+		myPanel = (JPanel)this.getContentPane();		//把我的面板设置为内容面板
+		myPanel.setOpaque(false);					//把我的面板设置为不可视
+		myPanel.setLayout(new FlowLayout());		//把我的面板设置为流动布局
+		this.getLayeredPane().setLayout(null);		//把分层面板的布局置空
+		myPanel.add(lab);
+		myPanel.add(jtx);
+		myPanel.add(button1);						//把按钮添加到我的面板里
+		myPanel.add(button2);
+		
+		this.getLayeredPane().add(label, new Integer(Integer.MIN_VALUE));		//把标签添加到分层面板的最底层
+		//设置界面属性
+
+		button1.addActionListener(new MyClick1());
+		button2.addActionListener(new MyClick2());
+		this.setTitle("删除图书");
+		this.setBounds(200, 100, background.getIconWidth(), background.getIconHeight());
+		this.setResizable(false);
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.setVisible(true);
+	}
+	
+	class MyClick1 implements ActionListener{
+		public void actionPerformed(ActionEvent e){
+			int i;
+			try {
+				if(jtx.getText().toString().equals("")) {
+					JOptionPane.showMessageDialog(null, "书名为空请重新输入");
+					new deletebook(name);
+				}else {
+					i = t(jtx.getText().toString());
+					if(i > 0) {
+						JOptionPane.showMessageDialog(null, "删除成功");
+						new login2(name);
+					}else {
+						JOptionPane.showMessageDialog(null, "书库中无此书请重新输入");
+						new deletebook(name);
+					}
+				}
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+			setVisible(false);
+		}
+	}
+	
+	class MyClick2 implements ActionListener{
+		public void actionPerformed(ActionEvent e){
+			//JOptionPane.showMessageDialog(null, "点击成功");
+			new login2(name);
+			setVisible(false);
+		}
+	}
+	
+	public int t(String str) throws SQLException {
+		 return delete(str);
+	}
+	
+	public static int delete(String n) throws SQLException{		//删
+		String sql_Dri = "com.mysql.jdbc.Driver";
+		String sql_host = "jdbc:mysql://localhost:3306/book";
+		String sql_usname = "root";
+		String sql_uspsword = "123456789";
+		String sql_statm = "delete from guanliyuan where bookname = ?";
+		Connection con = null;
+		PreparedStatement pre = null;
+		try {
+			Class.forName(sql_Dri);
+		} catch (ClassNotFoundException e) {
+			System.out.println("获取驱动失败");
+			e.printStackTrace();
+		}
+		try {
+			con = DriverManager.getConnection(sql_host,sql_usname,sql_uspsword);
+		} catch (SQLException e) {
+			System.out.println("连接数据库失败");
+			e.printStackTrace();
+		}
+		pre = con.prepareStatement(sql_statm);
+		pre.setString(1, n);
+		int c = pre.executeUpdate();
+		try {
+			if(con != null){
+				con.close();
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		try {
+			if(pre != null){
+				pre.close();
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return c;
+	}
+	
+	
+}
+
+
+
+package com.Book;
+
+import java.awt.*;									//	增加图书界面
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
+import javax.swing.*;
+
+import com.Book.deletebook.MyClick2;
+public class insertbook extends JFrame{
+	ImageIcon background;
+	JPanel myPanel;
+	JLabel label;
+	JButton button1;
+	JButton button2;
+	String name;
+	JTextField jtx;
+	Label lab;
+	
+	public static void main(String[] args) {
+		
+		new insertbook("asd");
+	}
+	
+	insertbook(String str)
+	{
+		name = str;
+		button2 = new JButton("返回");   //创建一个按钮
+		button1 = new JButton("确认");
+		jtx = new JTextField(null,14);
+		lab = new Label("请输入要添加的书名");
+		background = new ImageIcon(this.getClass().getResource("/com/res/123.png"));	//创建一个背景图片
+		label = new JLabel(background);		//把背景图片添加到标签里
+		label.setBounds(0, 0, background.getIconWidth(), background.getIconHeight());	//把标签设置为和图片等高等宽
+		myPanel = (JPanel)this.getContentPane();		//把我的面板设置为内容面板
+		myPanel.setOpaque(false);					//把我的面板设置为不可视
+		myPanel.setLayout(new FlowLayout());		//把我的面板设置为流动布局
+		this.getLayeredPane().setLayout(null);		//把分层面板的布局置空
+		
+		myPanel.add(lab);
+		myPanel.add(jtx);	
+		myPanel.add(button1);						//把按钮添加到我的面板里
+		myPanel.add(button2);
+
+		this.getLayeredPane().add(label, new Integer(Integer.MIN_VALUE));		//把标签添加到分层面板的最底层
+		//设置界面属性
+		
+		button1.addActionListener(new MyClick1());
+		button2.addActionListener(new MyClick2());
+		this.setTitle("图书登入系统");
+		this.setBounds(200, 100, background.getIconWidth(), background.getIconHeight());
+		this.setResizable(false);
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.setVisible(true);
+	}
+	
+	class MyClick1 implements ActionListener{
+		public void actionPerformed(ActionEvent e){
+			int i;
+			try {
+				if(jtx.getText().toString().equals("")) {
+					JOptionPane.showMessageDialog(null, "书名为空请重新输入");
+					new insertbook(name);
+				}else {
+					i = t(jtx.getText().toString());
+					if(i > 0) {
+						JOptionPane.showMessageDialog(null, "添加成功");
+						new login2(name);
+					}else {
+						JOptionPane.showMessageDialog(null, "添加失败请重试");
+						new insertbook(name);
+					}
+				}
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+			
+			setVisible(false);
+		}
+	}
+	
+	class MyClick2 implements ActionListener{
+		public void actionPerformed(ActionEvent e){
+			new login2(name);
+			setVisible(false);
+		}
+	}
+	
+	
+	public int t(String str) throws SQLException {
+		 return insert(str);
+	}
+	
+	public static int insert(String n) throws SQLException{		//增
+		String sql_Dri = "com.mysql.jdbc.Driver";
+		String sql_host = "jdbc:mysql://localhost:3306/book";
+		String sql_usname = "root";
+		String sql_uspsword = "123456789";
+		String sql_statm = "insert into guanliyuan values(?,?,?)";
+		Connection con = null;
+		PreparedStatement pre = null;
+		try {
+			Class.forName(sql_Dri);
+			System.out.println("获取驱动成功");
+		} catch (ClassNotFoundException e) {
+			System.out.println("获取驱动失败");
+			e.printStackTrace();
+		}
+		try {
+			con = DriverManager.getConnection(sql_host,sql_usname,sql_uspsword);
+			System.out.println("连接数据库成功");
+		} catch (SQLException e) {
+			System.out.println("连接数据库失败");
+			e.printStackTrace();
+		}
+		pre = con.prepareStatement(sql_statm);
+		pre.setString(1, n);
+		pre.setInt(2, 1);
+		pre.setString(3, null);
+		int c = pre.executeUpdate();
+		if(c > 0){
+			System.out.println("成功执行操作!");
+		}else{
+			System.out.println("操作失败!");
+		}
+		try {
+			if(con != null){
+				con.close();
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		try {
+			if(pre != null){
+				pre.close();
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return c;
+	}
+	
+	
+}
